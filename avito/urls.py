@@ -28,7 +28,8 @@ urlpatterns = [
     path('cat/<int:pk>/update/', views.CategoryUpdateView.as_view(), name='category_update'),
     path('cat/<int:pk>/delete/', views.CategoryDeleteView.as_view(), name='category_delete'),
 
-    path('ad/', include('ads.urls'))
+    path('ad/', include('ads.urls')),
+    path('user/', include('user.urls')),
 ]
 
 if settings.DEBUG:

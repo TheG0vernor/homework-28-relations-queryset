@@ -30,13 +30,18 @@ def convert_other_to_json(csv_file, json_file, model):
             dict_ = {'model': model, 'pk': int(i['id'])}
             if 'id' in i:
                 del i['id']
+
+            if 'location_id' in i:
+                i['location'] = [int(i['location_id'])]
+                del i['location_id']
+
             dict_['fields'] = i
             result.append(dict_)
     with open(json_file, 'w', encoding='utf-8') as file_json:
         file_json.write(json.dumps(result, ensure_ascii=False))
 
 
-convert_ads_to_json('ad.csv', 'ad.json', 'ads.ad')
-convert_other_to_json('category.csv', 'category.json', 'ads.category')
-convert_other_to_json('location.csv', 'location.json', 'ads.location')
-convert_other_to_json('user.csv', 'user.json', 'ads.user')
+# convert_ads_and_user_to_json('ad.csv', 'ad.json', 'ads.ad')
+# convert_other_to_json('category.csv', 'category.json', 'ads.category')
+# convert_other_to_json('location.csv', 'location.json', 'user.location')
+# convert_other_to_json('user.csv', 'user.json', 'user.user')

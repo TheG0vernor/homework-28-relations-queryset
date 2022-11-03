@@ -1,13 +1,16 @@
 import json
 
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
-from ads.models import Category, Ad, User
+from ads.models import Category, Ad
+from avito.settings import TOTAL_ON_PAGE
+from user.models import User
 
 
 def root(request):
@@ -25,9 +28,15 @@ class AdListView(ListView):
     def get(self, request, *args, **kwargs):
         super().get(self, request, *args, **kwargs)
 
-        response = []
-        for ad in self.object_list:
-            response.append({
+        self.object_list = self.object_list.select_related('author').select_related('category').order_by('-price')  # сортировка объявлений
+
+        paginator = Paginator(object_list=self.object_list, per_page=TOTAL_ON_PAGE)
+        page_number = request.GET.get('page', 1)
+        page_object = paginator.get_page(page_number)
+
+        ads = []
+        for ad in page_object:
+            ads.append({
                 "id": ad.id,
                 "name": ad.name,
                 "author_id": ad.author_id,
@@ -36,7 +45,12 @@ class AdListView(ListView):
                 "category_id": ad.category_id
             })
 
-        return JsonResponse(response, safe=False, json_dumps_params={'ensure_ascii': False})
+        response = {'items': ads,
+                    "total": paginator.count,
+                    'num_pages': paginator.num_pages
+                    }
+
+        return JsonResponse(response, json_dumps_params={'ensure_ascii': False})
 
 
 class AdDetailView(DetailView):
@@ -173,6 +187,8 @@ class CategoryListView(ListView):
     def get(self, request, *args, **kwargs):
         super().get(self, request, *args, **kwargs)
 
+        self.object_list = self.object_list.order_by('name')  # сортировка категорий
+
         response = []
         for category in self.object_list:
             response.append({
@@ -246,3 +262,4 @@ class CategoryDeleteView(DeleteView):
         super().delete(self, request, *args, **kwargs)
 
         return JsonResponse({'status': 'ok'})
+

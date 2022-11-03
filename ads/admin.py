@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from ads.models import Location, User, Category, Ad
+from ads.models import Category, Ad
+from user.models import User, Location
 
 # Register your models here.
 admin.site.register(Location)
