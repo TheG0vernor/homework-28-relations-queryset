@@ -32,7 +32,7 @@ def convert_other_to_json(csv_file, json_file, model):
                 del i['id']
 
             if 'location_id' in i:
-                i['location'] = [int(i['location_id'])]
+                i['locations'] = [int(i['location_id'])]
                 del i['location_id']
 
             dict_['fields'] = i
