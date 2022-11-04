@@ -10,7 +10,7 @@ from django.views.generic import DetailView, ListView, CreateView, UpdateView, D
 
 from ads.models import Category, Ad
 from avito.settings import TOTAL_ON_PAGE
-from user.models import User
+from users.models import User
 
 
 def root(request):

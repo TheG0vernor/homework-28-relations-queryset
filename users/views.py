@@ -8,7 +8,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 from avito.settings import TOTAL_ON_PAGE
-from user.models import User, Location
+from users.models import User, Location
 
 
 class UserListView(ListView):
@@ -18,7 +18,7 @@ class UserListView(ListView):
         super().get(self, request, *args, **kwargs)
 
         self.object_list = self.object_list.annotate(ads=Count('ad'))  # подсчёт объявлений для автора
-        self.object_list = self.object_list.prefetch_related('location').order_by('username')  # сортировка авторов
+        self.object_list = self.object_list.prefetch_related('locations').order_by('username')  # сортировка авторов
 
         paginator = Paginator(object_list=self.object_list, per_page=TOTAL_ON_PAGE)
         page_number = request.GET.get('page', 1)
@@ -34,7 +34,7 @@ class UserListView(ListView):
                 "password": user.password,
                 "role": user.role,
                 "age": user.age,
-                "location": list(map(str, user.location.all())),
+                "locations": list(map(str, user.locations.all())),
                 "total_ads": user.ads,
             })
 
@@ -60,14 +60,14 @@ class UserDetailView(DetailView):
             "password": user.password,
             "role": user.role,
             "age": user.age,
-            "location": list(map(str, user.location.all()))
+            "locations": list(map(str, user.locations.all()))
         }, json_dumps_params={'ensure_ascii': False})
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserCreateView(CreateView):
     model = User
-    fields = ['username', 'password', 'first_name', 'last_name', 'role', 'age', 'location']
+    fields = ['username', 'password', 'first_name', 'last_name', 'role', 'age', 'locations']
 
     def post(self, request, *args, **kwargs):
         user_data = json.loads(request.body)
@@ -81,9 +81,9 @@ class UserCreateView(CreateView):
             age=user_data['age'],
         )
 
-        for i in user_data['location']:
+        for i in user_data['locations']:
             location_obj, created = Location.objects.get_or_create(name=i, defaults={'lat': '0.001', 'lng': '0.002'})
-            user.location.add(location_obj)
+            user.locations.add(location_obj)
 
         try:
             user.full_clean()
@@ -97,14 +97,14 @@ class UserCreateView(CreateView):
             "last_name": user.last_name,
             "role": user.role,
             'age': user.age,
-            "location": list(map(str, user.location.all()))
+            "locations": list(map(str, user.locations.all()))
         }, json_dumps_params={"ensure_ascii": False})
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserUpdateView(UpdateView):
     model = User
-    fields = ['username', 'password', 'first_name', 'last_name', 'role', 'age', 'location']
+    fields = ['username', 'password', 'first_name', 'last_name', 'role', 'age', 'locations']
 
     def patch(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
@@ -118,12 +118,12 @@ class UserUpdateView(UpdateView):
         self.object.role = user_data['role']
         self.object.age = user_data['age']
 
-        for i in user_data['location']:
+        for i in user_data['locations']:
             try:
                 location_obj = Location.objects.get(name=i)
             except Location.DoesNotExist:
                 return JsonResponse({'error': 'location not found'}, status=404)
-            self.object.location.add(location_obj)
+            self.object.locations.add(location_obj)
 
         try:
             self.object.full_clean()
@@ -139,7 +139,7 @@ class UserUpdateView(UpdateView):
             "last_name": self.object.last_name,
             "role": self.object.role,
             'age': self.object.age,
-            "location": list(map(str, self.object.location.all()))
+            "locations": list(map(str, self.object.locations.all()))
         }, json_dumps_params={"ensure_ascii": False}
         )
 

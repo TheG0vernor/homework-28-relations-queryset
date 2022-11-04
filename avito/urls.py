@@ -29,7 +29,7 @@ urlpatterns = [
     path('cat/<int:pk>/delete/', views.CategoryDeleteView.as_view(), name='category_delete'),
 
     path('ad/', include('ads.urls')),
-    path('user/', include('user.urls')),
+    path('user/', include('users.urls')),
 ]
 
 if settings.DEBUG:

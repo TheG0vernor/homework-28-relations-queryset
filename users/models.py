@@ -23,7 +23,7 @@ class User(models.Model):
     password = models.CharField(max_length=30)
     role = models.CharField(max_length=9, choices=ROLE, default='member')
     age = models.PositiveIntegerField()
-    location = models.ManyToManyField(to=Location)
+    locations = models.ManyToManyField(to=Location)
 
     def __str__(self):
         return self.username
